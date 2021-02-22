@@ -8,6 +8,7 @@ Jannos-443
 ## Project Details
 
 Monitors pending Print Jobs older than x minutes.
+Sensor message displays Printername and Job Owner.
 
 Default Values:
 - Age = 1 (minutes)
