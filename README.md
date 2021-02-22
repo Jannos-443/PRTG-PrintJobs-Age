@@ -31,8 +31,8 @@ This example shows Warning for 1 hanging Job and Error for more than 1 Job.
 4. Set the "$IgnorePattern" or "$IgnoreScript" parameter to Exclude PrinterQueues
 
 ## Examples
-![PRTG-VMware-Snapshot](media/Print_Limit_OK.png)
-![PRTG-VMware-Snapshot](media/Print_Limit_Warning.png)
+![PRTG-PrintJobs-Age](media/Print_Limit_OK.png)
+![PRTG-PrintJobs-Age](media/Print_Limit_Warning.png)
 
 Printer exceptions
 ------------------
