@@ -20,12 +20,16 @@
     .PARAMETER IgnorePattern
     Regular expression to describe the PrinterName + Jobs for Exampe "Printer 100, 12" where 12 is the JobID
      
-      Example: ^(DT_IT_B10_P107, 238|TestPrinter123)$
+      Example: ^(BE_IT_B10_P107, 238|TestPrinter123)$
 
       Example2: ^(Test123.*|TestPrinter555)$ excluded Test12345 und alles mit 
 
     #https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions?view=powershell-7.1
 
+    .PARAMETER Age
+    Provides the Job Age in minutes to Monitor.
+    For Example 5 means only Jobs olden than 5 minutes are count as Error
+    
     .PARAMETER UserName
     Provide the Windows user name to connect to the target host via WMI. Better way than explicit credentials is to set the PRTG sensor
     to launch the script in the security context that uses the "Windows credentials of parent device".
@@ -47,7 +51,7 @@
 param(
     [string]$ComputerName = "",
     [string]$IgnorePattern = "",
-    [int]$Age = "1", # Jobs is older than x minutes
+    [int]$Age = "1",
     [string]$UserName = "",
     [string]$Password = ""
 )
