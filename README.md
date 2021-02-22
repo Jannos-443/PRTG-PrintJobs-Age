@@ -18,13 +18,13 @@ Default Values:
 1. Place "PRTG-PrintJobs-Age.ps1" under "C:\Program Files (x86)\PRTG Network Monitor\Custom Sensors\EXE"
 
 2. Create new Sensor 
-- EXE/Script = PRTG-PrintJobs-Age.ps1
-- Parameter = "-ComputerName %host -Age 5"
+   - EXE/Script = PRTG-PrintJobs-Age.ps1
+   - Parameter = "-ComputerName %host -Age 5"
 
-3. Change "Value" Channel >> "Lookups and Limits" to "Enable alerting based on limits"
-This example shows Warning for 1 hanging Job and Error for more than 1 Job.
-- Upper Error Limit 1
-- Upper Warning Limit 0,1
+3. Change "Value" Channel >> "Lookups and Limits" to "Enable alerting based on limits" 
+   - This example shows Warning for 1 hanging Job and Error for more than 1 Job.
+     - Upper Error Limit 1
+     - Upper Warning Limit 0,1
 ![PRTG-PrintJobs-Age](media/Sensor-Limit-Channel.png)
 ![PRTG-PrintJobs-Age](media/Sensor-Limit.png)
 
