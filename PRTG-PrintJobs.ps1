@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-    Monitors Pending Print Jobs from one Server
+    Monitors pending Print Jobs older than x minutes.
 
     .DESCRIPTION
     Using WMI this script searches for pending Print Jobs.
