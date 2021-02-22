@@ -88,7 +88,7 @@ try {
 }
 
 # hardcoded list that applies to all hosts
-$IgnoreScript = '^(TestIgnore)$' 
+$IgnoreScript = '^(TestExclude123|TestExcludeWildcard.*)$' 
 
 #Remove Ignored Printer
 if ($IgnorePattern -ne "") {
