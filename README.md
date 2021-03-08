@@ -20,6 +20,7 @@ Default Values:
 2. Create new Sensor 
    - EXE/Script = PRTG-PrintJobs-Age.ps1
    - Parameter = "-ComputerName %host -Age 5"
+   - set "Use Windows credentials of parent device" or use "-User" and "-Password"
 
 3. Change "Value" Channel >> "Lookups and Limits" to "Enable alerting based on limits" 
    - This example shows Warning for 1 hanging Job and Error for more than 1 Job.
