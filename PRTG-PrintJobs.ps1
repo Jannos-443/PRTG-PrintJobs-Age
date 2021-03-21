@@ -1,18 +1,17 @@
 <#
     .SYNOPSIS
-    Monitors pending Print Jobs older than x minutes.
+    Monitors Pending Print Jobs from one Server
 
     .DESCRIPTION
     Using WMI this script searches for pending Print Jobs.
     Exceptions can be made within this script by changing the variable $IgnoreScript. This way, the change applies to all PRTG sensors 
     based on this script. If exceptions have to be made on a per sensor level, the script parameter $IgnorePattern can be used.
 
-    Copy this script to the PRTG probe EXE scripts folder (${env:ProgramFiles(x86)}\PRTG Network Monitor\Custom Sensors\EXE)
-    and create a "EXE/Script" sensor. Choose this script from the dropdown and set at least:
+    Copy this script to the PRTG probe EXEXML scripts folder (${env:ProgramFiles(x86)}\PRTG Network Monitor\Custom Sensors\EXEXML)
+    and create a "EXE/Script Advanced" sensor. Choose this script from the dropdown and set at least:
 
     + Parameters: -ComputerName %host
     + Security Context: Use Windows credentials of parent device
-    + Scanning Interval: 5 minutes
 
     .PARAMETER ComputerName
     The hostname or IP address of the Windows machine to be checked. Should be set to %host in the PRTG parameter configuration.
@@ -20,16 +19,12 @@
     .PARAMETER IgnorePattern
     Regular expression to describe the PrinterName + Jobs for Exampe "Printer 100, 12" where 12 is the JobID
      
-      Example: ^(BE_IT_B10_P107, 238|TestPrinter123)$
+      Example: ^(DT_IT_B10_P107, 238|TestPrinter123)$
 
       Example2: ^(Test123.*|TestPrinter555)$ excluded Test12345 und alles mit 
 
     #https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions?view=powershell-7.1
 
-    .PARAMETER Age
-    Provides the Job Age in minutes to Monitor.
-    For Example 5 means only Jobs olden than 5 minutes are count as Error
-    
     .PARAMETER UserName
     Provide the Windows user name to connect to the target host via WMI. Better way than explicit credentials is to set the PRTG sensor
     to launch the script in the security context that uses the "Windows credentials of parent device".
@@ -39,7 +34,7 @@
     to launch the script in the security context that uses the "Windows credentials of parent device".
 
     .EXAMPLE
-    Sample call from PRTG EXE/Script
+    Sample call from PRTG EXE/Script Advanced
     PRTG-PrintJobs.ps1 -ComputerName %host -Age 5
 
     .NOTES
@@ -51,14 +46,28 @@
 param(
     [string]$ComputerName = "",
     [string]$IgnorePattern = "",
-    [int]$Age = "1",
+    [int]$Age = "1", # Jobs is older than x minutes
     [string]$UserName = "",
     [string]$Password = ""
 )
 
+
+#Catch all unhandled Errors
+trap{
+    Write-Output "<prtg>"
+    Write-Output " <error>1</error>"
+    Write-Output " <text>$($_.ToString() - $($_.ScriptStackTrace))</text>"
+    Write-Output "</prtg>"
+    Exit
+}
+
+
 if ($ComputerName -eq "") {
-    Write-Host "You must provide a computer name to connect to"
-    Exit 2
+    Write-Output "<prtg>"
+    Write-Output " <error>1</error>"
+    Write-Output " <text>You must provide a computer name to connect to</text>"
+    Write-Output "</prtg>"
+    Exit
 }
 
 # Error if there's anything going on
@@ -83,12 +92,15 @@ try {
         $PrintJobs = Get-WmiObject -class $WmiClass -namespace "root\CIMV2" -ComputerName $ComputerName -Credential $Credentials | Where-Object {$_.ConvertToDateTime($_.timesubmitted) -lt "$old"}  
     }
 } catch {
-    Write-Host "Error connecting to $ComputerName ($($_.Exception.Message))"
-    Exit 2
+    Write-Output "<prtg>"
+    Write-Output " <error>1</error>"
+    Write-Output " <text>Error connecting to $ComputerName ($($_.Exception.Message))</text>"
+    Write-Output "</prtg>"
+    Exit
 }
 
 # hardcoded list that applies to all hosts
-$IgnoreScript = '^(TestExclude123|TestExcludeWildcard.*)$' 
+$IgnoreScript = '^(TestIgnore)$' 
 
 #Remove Ignored Printer
 if ($IgnorePattern -ne "") {
@@ -102,6 +114,8 @@ if ($IgnoreScript -ne "") {
 
 $Count = ($PrintJobs | Measure-Object).Count
 $Error = ""
+
+$xmlOutput = '<prtg>'
 
 #Check if pending Jobs exists
 if($Count -ge 1)
@@ -118,11 +132,23 @@ if($Count -ge 1)
           
         }
 
-    Write-Host "$($count):$($count) Job(s) pending; $($Error)"
-    exit 1
+    $xmlOutput = $xmlOutput + "<text>$($count) PrintJob(s) older $($age) min; $($Error)</text>"
     }
 
 else{
-    Write-Host "0:No PrintJobs pending"
-    exit 0
+    $xmlOutput = $xmlOutput + "<text>No PrintJobs older than $($Age) min.</text>"
     }
+
+
+$xmlOutput = $xmlOutput + "<result>
+        <channel>Jobs pending</channel>
+        <value>$count</value>
+        <unit>Count</unit>
+        <limitmode>1</limitmode>
+        <LimitMaxError>1.5</LimitMaxError>
+        <LimitMaxWarning>0.1</LimitMaxWarning>
+        </result>"
+
+$xmlOutput = $xmlOutput + "</prtg>"
+
+$xmlOutput
