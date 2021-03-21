@@ -15,25 +15,18 @@ Default Values:
 
 ## HOW TO
 
-1. Place "PRTG-PrintJobs-Age.ps1" under "C:\Program Files (x86)\PRTG Network Monitor\Custom Sensors\EXE"
+1. Place "PRTG-PrintJobs-Age.ps1" under "C:\Program Files (x86)\PRTG Network Monitor\Custom Sensors\EXEXML"
 
 2. Create new Sensor 
    - EXE/Script = PRTG-PrintJobs-Age.ps1
-   - Parameter = "-ComputerName %host -Age 5"
+   - Parameter = "-ComputerName %host -Age 5" (Age = 5 means older than 5 min)
    - set "Use Windows credentials of parent device" or use "-User" and "-Password"
 
-3. Change "Value" Channel >> "Lookups and Limits" to "Enable alerting based on limits" 
-   - This example shows Warning for 1 hanging Job and Error for more than 1 Job.
-     - Upper Error Limit 1
-     - Upper Warning Limit 0,1
-![PRTG-PrintJobs-Age](media/Sensor-Limit-Channel.png)
-![PRTG-PrintJobs-Age](media/Sensor-Limit.png)
-
-4. Set the "$IgnorePattern" or "$IgnoreScript" parameter to Exclude PrinterQueues
+3. Set the "$IgnorePattern" or "$IgnoreScript" parameter to Exclude PrinterQueues
 
 ## Examples
-![PRTG-PrintJobs-Age](media/Print_Limit_OK.png)
-![PRTG-PrintJobs-Age](media/Print_Limit_Warning.png)
+![PRTG-PrintJobs-Age](media/PrintJobs_OK.png)
+![PRTG-PrintJobs-Age](media/PrintJobs_Warning.png)
 
 Printer exceptions
 ------------------
