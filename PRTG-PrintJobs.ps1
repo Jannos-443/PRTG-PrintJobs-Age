@@ -21,7 +21,7 @@
      
       Example: ^(DT_IT_B10_P107, 238|TestPrinter123)$
 
-      Example2: ^(Test123.*|TestPrinter555)$ excluded Test12345 und alles mit 
+      Example2: ^(Test123.*|TestPrinter555)$ excludes Test12345 or Test1234
 
     #https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions?view=powershell-7.1
 
@@ -41,7 +41,7 @@
     This script is based on the sample by Paessler (https://kb.paessler.com/en/topic/67869-auto-starting-services) and debold (https://github.com/debold/PRTG-WindowsServices)
 
     Author:  Jannos-443
-    https://github.com/Jannos-443/PRTG-PrintJobs
+    https://github.com/Jannos-443/PRTG-PrintJobs-Age
 #>
 param(
     [string]$ComputerName = "",
