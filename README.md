@@ -28,9 +28,8 @@ Default Values:
 3. Set the "$IgnorePattern" or "$IgnoreScript" parameter to Exclude PrinterQueues
 
 
-If you connect to **Computers by IP** or to **not Domain Clients** please read 
+If you connect to **Computers by IP** or to **not Domain Clients** please read [Microsoft Docs](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_troubleshooting?view=powershell-7.1#how-to-use-an-ip-address-in-a-remote-command)
 
-`https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_troubleshooting?view=powershell-7.1#how-to-use-an-ip-address-in-a-remote-command`
 you maybe have to add the target to the TrustedHosts on the PRTG Probe 
 
 (example: `Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "IPAdressOfMyTarget,HostnameOfMyTarget"`
