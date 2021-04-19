@@ -21,7 +21,7 @@
      
       Example: ^(DT_IT_B10_P107, 238|TestPrinter123)$
 
-      Example2: ^(Test123.*|TestPrinter555)$ excludes Test12345 or Test1234
+      Example2: ^(Test123.*|TestPrinter555)$ excluded Test12345 und alles mit 
 
     #https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions?view=powershell-7.1
 
@@ -41,11 +41,11 @@
     This script is based on the sample by Paessler (https://kb.paessler.com/en/topic/67869-auto-starting-services) and debold (https://github.com/debold/PRTG-WindowsServices)
 
     Author:  Jannos-443
-    https://github.com/Jannos-443/PRTG-PrintJobs-Age
+    https://github.com/Jannos-443/PRTG-PrintJobs
 #>
 param(
     [string]$ComputerName = "",
-    [string]$IgnorePattern = "",
+    [string]$IgnorePattern = '',
     [int]$Age = "1", # Jobs is older than x minutes
     [string]$UserName = "",
     [string]$Password = ""
@@ -53,10 +53,18 @@ param(
 
 
 #Catch all unhandled Errors
+$ErrorActionPreference = "Stop"
 trap{
+    if($session -ne $null)
+        {
+        Remove-CimSession -CimSession $session -ErrorAction SilentlyContinue
+        }
+    $Output = "line:$($_.InvocationInfo.ScriptLineNumber.ToString()) char:$($_.InvocationInfo.OffsetInLine.ToString()) --- message: $($_.Exception.Message.ToString()) --- line: $($_.InvocationInfo.Line.ToString()) "
+    $Output = $Output.Replace("<","")
+    $Output = $Output.Replace(">","")
     Write-Output "<prtg>"
-    Write-Output " <error>1</error>"
-    Write-Output " <text>$($_.ToString() - $($_.ScriptStackTrace))</text>"
+    Write-Output "<error>1</error>"
+    Write-Output "<text>$Output</text>"
     Write-Output "</prtg>"
     Exit
 }
@@ -73,43 +81,68 @@ if ($ComputerName -eq "") {
 # Error if there's anything going on
 $ErrorActionPreference = "Stop"
 
+
 # Generate Credentials Object, if provided via parameter
-if ($UserName -eq "" -or $Password -eq "") {
-   $Credentials = $null
-} else {
-    $SecPasswd  = ConvertTo-SecureString $Password -AsPlainText -Force
-    $Credentials= New-Object System.Management.Automation.PSCredential ($UserName, $secpasswd)
+try{
+    if($UserName -eq "" -or $Password -eq "") 
+        {
+        $Credentials = $null
+        }
+    else 
+        {
+        $SecPasswd  = ConvertTo-SecureString $Password -AsPlainText -Force
+        $Credentials= New-Object System.Management.Automation.PSCredential ($UserName, $secpasswd)
+        }
+} catch {
+    Write-Output "<prtg>"
+    Write-Output " <error>1</error>"
+    Write-Output " <text>Error Parsing Credentials ($($_.Exception.Message))</text>"
+    Write-Output "</prtg>"
+    Exit
 }
 
 $WmiClass = "win32_printjob"
 $old = (Get-Date).AddMinutes(-$Age)
 
 # Get list of Jobs that are older than the Age.
-try {
-    if ($null -eq $Credentials) {
-        $PrintJobs = Get-WmiObject -class $WmiClass -namespace "root\CIMV2" -ComputerName $ComputerName | Where-Object {$_.ConvertToDateTime($_.timesubmitted) -lt "$old"}
-    } else {
-        $PrintJobs = Get-WmiObject -class $WmiClass -namespace "root\CIMV2" -ComputerName $ComputerName -Credential $Credentials | Where-Object {$_.ConvertToDateTime($_.timesubmitted) -lt "$old"}  
-    }
-} catch {
+try 
+    {
+    if ($Credentials -eq $null) 
+        {
+        $PrintJobs = Get-CimInstance -Namespace "root\CIMV2" -ClassName $WmiClass -ComputerName $ComputerName | Where-Object {$_.timesubmitted -lt $old}
+        } 
+    
+    else 
+        {
+        $session = New-CimSession –ComputerName $ComputerName -Credential $Credentials
+        $PrintJobs = Get-CimInstance -Namespace "root\CIMV2" -ClassName $WmiClass -CimSession $session | Where-Object {$_.timesubmitted -lt $old}
+        Start-Sleep -Seconds 1
+        Remove-CimSession -CimSession $session
+        }
+
+    } 
+catch 
+    {
     Write-Output "<prtg>"
     Write-Output " <error>1</error>"
     Write-Output " <text>Error connecting to $ComputerName ($($_.Exception.Message))</text>"
     Write-Output "</prtg>"
     Exit
-}
+    }
 
 # hardcoded list that applies to all hosts
 $IgnoreScript = '^(TestIgnore)$' 
 
 #Remove Ignored Printer
-if ($IgnorePattern -ne "") {
+if ($IgnorePattern -ne "") 
+    {
     $PrintJobs = $PrintJobs | where {$_.Name -notmatch $IgnorePattern}  
-}
+    }
 
-if ($IgnoreScript -ne "") {
+if ($IgnoreScript -ne "") 
+    {
     $PrintJobs = $PrintJobs | where {$_.Name -notmatch $IgnoreScript}  
-}
+    }
 
 
 $Count = ($PrintJobs | Measure-Object).Count
