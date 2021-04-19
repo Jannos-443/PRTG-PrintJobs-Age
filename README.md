@@ -15,13 +15,16 @@ Default Values:
 
 ## HOW TO
 
-1. Place "PRTG-PrintJobs-Age.ps1" under "C:\Program Files (x86)\PRTG Network Monitor\Custom Sensors\EXEXML"
+1. Place `PRTG-PrintJobs-Age.ps1` under `C:\Program Files (x86)\PRTG Network Monitor\Custom Sensors\EXEXML`
 
 2. Create new Sensor 
-   - EXE/Script = PRTG-PrintJobs-Age.ps1
-   - Parameter = "-ComputerName %host -Age 5" (Age = 5 means older than 5 min)
-   - set "Use Windows credentials of parent device" or use "-User" and "-Password"
 
+   | Settings | Value |
+   | --- | --- |
+   | EXE/Script | PRTG-PrintJobs-Age.ps1 |
+   | Parameters | -ComputerName %host -Age 5 |
+   | Security Context | Use Windows credentials of parent device" or use "-Username" and "-Password |
+   
 3. Set the "$IgnorePattern" or "$IgnoreScript" parameter to Exclude PrinterQueues
 
 ## Examples
