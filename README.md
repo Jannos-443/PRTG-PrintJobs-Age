@@ -32,7 +32,7 @@ If you connect to **Computers by IP** or to **not Domain Clients** please read [
 
 you maybe have to add the target to the TrustedHosts on the PRTG Probe 
 
-(example: `Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "IPAdressOfMyTarget,HostnameOfMyTarget"`
+example: `Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "IPAdressOfMyTarget,HostnameOfMyTarget"`
 
 ## Examples
 ![PRTG-PrintJobs-Age](media/PrintJobs_OK.png)
