@@ -32,7 +32,14 @@ If you connect to **Computers by IP** or to **not Domain Clients** please read [
 
 you maybe have to add the target to the TrustedHosts on the PRTG Probe 
 
-example: `Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "IPAdressOfMyTarget,HostnameOfMyTarget"`
+example (replace all currenty entries): 
+
+    Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "ServerIP1,ServerIP2,ServerHostname1"
+
+example want to and and not replace the list:
+    
+    $curValue = (Get-Item wsman:\localhost\Client\TrustedHosts).value
+    Set-Item WSMan:\localhost\Client\TrustedHosts -Value "$curValue,NewServer3.test.com"
 
 ## Examples
 ![PRTG-PrintJobs-Age](media/PrintJobs_OK.png)
