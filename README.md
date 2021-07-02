@@ -27,10 +27,13 @@ Default Values:
    
 3. Set the "$IgnorePattern" or "$IgnoreScript" parameter to Exclude PrinterQueues
 
+<br>
+
+## Non Domain or IP
 
 If you connect to **Computers by IP** or to **not Domain Clients** please read [Microsoft Docs](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_troubleshooting?view=powershell-7.1#how-to-use-an-ip-address-in-a-remote-command)
 
-you maybe have to add the target to the TrustedHosts on the PRTG Probe 
+you maybe have to add the target to the TrustedHosts on the PRTG Probe and use explicit credentials.
 
 example (replace all currenty entries): 
 
@@ -40,6 +43,10 @@ example want to and and not replace the list:
     
     $curValue = (Get-Item wsman:\localhost\Client\TrustedHosts).value
     Set-Item WSMan:\localhost\Client\TrustedHosts -Value "$curValue,NewServer3.test.com"
+    
+exmaple PRTG parameter with explicit credentials:
+    
+    -ComputerName "%host" -Username "%windowsuser" -Password "%windowspassword" -Age 1
 
 ## Examples
 ![PRTG-PrintJobs-Age](media/PrintJobs_OK.png)
