@@ -21,7 +21,7 @@ Default Values:
 
    | Settings | Value |
    | --- | --- |
-   | EXE/Script | PRTG-PrintJobs-Age.ps1 |
+   | EXE/Script Advanced | PRTG-PrintJobs-Age.ps1 |
    | Parameters | -ComputerName %host -Age 5 |
    | Security Context | Use Windows credentials of parent device" or use "-Username" and "-Password" |
    
