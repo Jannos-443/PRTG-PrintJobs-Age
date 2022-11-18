@@ -1,4 +1,4 @@
-# PRTG-PrintJobs-Age
+# PRTG-PrintJobs
 # About
 
 ## Project Owner:
@@ -7,22 +7,20 @@ Jannos-443
 
 ## Project Details
 
-Monitors pending Print Jobs older than x minutes.
+Monitors pending PrintJobs and PrintJobs Age
 Sensor message shows PrinterQueue and Job Owner.
 
-Default Values:
-- Age = 1 (minutes)
 
 ## HOW TO
 
-1. Place `PRTG-PrintJobs-Age.ps1` under `C:\Program Files (x86)\PRTG Network Monitor\Custom Sensors\EXEXML`
+1. Place `PRTG-PrintJobs.ps1` under `C:\Program Files (x86)\PRTG Network Monitor\Custom Sensors\EXEXML`
 
 2. Create new Sensor 
 
    | Settings | Value |
    | --- | --- |
-   | EXE/Script Advanced | PRTG-PrintJobs-Age.ps1 |
-   | Parameters | -ComputerName %host -Age 5 |
+   | EXE/Script Advanced | PRTG-PrintJobs.ps1 |
+   | Parameters | -ComputerName %host |
    | Security Context | Use Windows credentials of parent device" or use "-Username" and "-Password" |
    
 3. Set the "$IgnorePattern" or "$IgnoreScript" parameter to Exclude PrinterQueues
@@ -46,11 +44,11 @@ example want to and and not replace the list:
     
 exmaple PRTG parameter with explicit credentials:
     
-    -ComputerName "%host" -Username "%windowsuser" -Password "%windowspassword" -Age 1
+    -ComputerName "%host" -Username "%windowsuser" -Password "%windowspassword"
 
 ## Examples
 ![PRTG-PrintJobs-Age](media/PrintJobs_OK.png)
-![PRTG-PrintJobs-Age](media/PrintJobs_Warning.png)
+![PRTG-PrintJobs-Age](media/PrintJobs_Error.png)
 
 Exceptions
 ------------------

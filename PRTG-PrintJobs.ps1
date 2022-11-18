@@ -50,7 +50,7 @@
 
     .EXAMPLE
     Sample call from PRTG EXE/Script Advanced
-    PRTG-PrintJobs.ps1 -ComputerName %host -Age 5
+    PRTG-PrintJobs.ps1 -ComputerName %host
 
     Sample call from Task Scheduler on Remote Computer
     -Command "& 'D:\Powershell\PRTG-PrintJobs.ps1' -ComputerName 'localhost' -HttpPush -HttpServer 'YourPRTGServer' -HttpPort '5050' -HttpToken 'YourHTTPPushToken'"
@@ -64,7 +64,6 @@
 param(
     [string]$ComputerName = "",
     [string]$IgnorePattern = '',
-    [int]$Age = "1",                # Jobs is older than x minutes
     [string]$UserName = "",
     [string]$Password = "",
     [switch] $HttpPush,             #enables http push, usefull if you want to run the Script on the target Server to reduce remote Permissions
@@ -123,20 +122,19 @@ try{
 }
 
 $WmiClass = "win32_printjob"
-$old = (Get-Date).AddMinutes(-$Age)
 
 # Get list of Jobs that are older than the Age.
 try 
     {
     if ($null -eq $Credentials) 
         {
-        $PrintJobs = Get-CimInstance -Namespace "root\CIMV2" -ClassName $WmiClass -ComputerName $ComputerName | Where-Object {$_.timesubmitted -lt $old}
+        $PrintJobs = Get-CimInstance -Namespace "root\CIMV2" -ClassName $WmiClass -ComputerName $ComputerName
         } 
     
     else 
         {
-        $session = New-CimSession –ComputerName $ComputerName -Credential $Credentials
-        $PrintJobs = Get-CimInstance -Namespace "root\CIMV2" -ClassName $WmiClass -CimSession $session | Where-Object {$_.timesubmitted -lt $old}
+        $session = New-CimSession -ComputerName $ComputerName -Credential $Credentials
+        $PrintJobs = Get-CimInstance -Namespace "root\CIMV2" -ClassName $WmiClass -CimSession $session
         Start-Sleep -Seconds 1
         Remove-CimSession -CimSession $session
         }
@@ -165,14 +163,28 @@ if ($IgnoreScript -ne "")
     $PrintJobs = $PrintJobs | Where-Object {$_.Name -notmatch $IgnoreScript}  
     }
 
+#Select oldest Job
+if ($PrintJobs)
+    {
+    $OldestJob = ((Get-Date) - ($PrintJobs | Sort-Object -Property TimeSubmitted | Select-Object -Property TimeSubmitted -ExpandProperty TimeSubmitted -First 1)).TotalSeconds
+    $OldestJob = [math]::Round($OldestJob)
+    if($OldestJob -gt 42163632000 )
+        {
+        $OldestJob = 42163632000
+        }
+    }
+else {
+    $OldestJob = 0
+    }
 
-$Count = ($PrintJobs | Measure-Object).Count
+$count = ($PrintJobs | Measure-Object).count
+
 $ErrorText = ""
 
 $xmlOutput = '<prtg>'
 
 #Check if pending Jobs exists
-if($Count -ge 1)
+if($PrintJobs)
     {
     foreach($PrintJob in $PrintJobs)
         {
@@ -182,25 +194,30 @@ if($Count -ge 1)
         else{
             $PName = $PrintJob.Name
             }
-        $ErrorText += "Printer=$($PName) Owner=$($PrintJob.owner); "
+        $ErrorText += "Printer=`"$($PName)`" Owner=`"$($PrintJob.owner)`"; "
           
         }
 
-    $xmlOutput += "<text>$($count) PrintJob(s) older $($age) min; $($ErrorText)</text>"
+    $xmlOutput += "<text>$($count) PrintJob(s): $($ErrorText)</text>"
     }
 
 else{
-    $xmlOutput += "<text>No PrintJobs older than $($Age) min.</text>"
+    $xmlOutput += "<text>No PrintJobs pending.</text>"
     }
 
 
 $xmlOutput += "<result>
-        <channel>Jobs pending</channel>
+        <channel>pending PrintJobs</channel>
         <value>$count</value>
         <unit>Count</unit>
+        </result>
+        <result>
+        <channel>oldest PrintJob</channel>
+        <value>$OldestJob</value>
+        <unit>TimeSeconds</unit>
         <limitmode>1</limitmode>
-        <LimitMaxError>1</LimitMaxError>
-        <LimitMaxWarning>0</LimitMaxWarning>
+        <LimitMaxError>120</LimitMaxError>
+        <LimitMaxWarning>60</LimitMaxWarning>
         </result>"
 
 $xmlOutput += "</prtg>"
