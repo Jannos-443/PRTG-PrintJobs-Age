@@ -4,8 +4,7 @@
 
     .DESCRIPTION
     Using WMI this script searches for pending Print Jobs.
-    Exceptions can be made within this script by changing the variable $IgnoreScript. This way, the change applies to all PRTG sensors 
-    based on this script. If exceptions have to be made on a per sensor level, the script parameter $IgnorePattern can be used.
+    Exceptions can be made within this script.
 
     Copy this script to the PRTG probe EXEXML scripts folder (${env:ProgramFiles(x86)}\PRTG Network Monitor\Custom Sensors\EXEXML)
     and create a "EXE/Script Advanced" sensor. Choose this script from the dropdown and set at least:
@@ -16,7 +15,7 @@
     .PARAMETER ComputerName
     The hostname or IP address of the Windows machine to be checked. Should be set to %host in the PRTG parameter configuration.
 
-    .PARAMETER IgnorePattern
+    .PARAMETER IncludeName
     Regular expression to describe the PrinterName + Jobs for Exampe "Printer 100, 12" where 12 is the JobID
      
       Example: ^(DT_IT_B10_P107, 238|TestPrinter123)$
@@ -24,6 +23,15 @@
       Example2: ^(Test123.*|TestPrinter555)$ excludes TestPrinter555 and any Printer starting with Test123
 
     #https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_regular_expressions?view=powershell-7.1
+
+    .PARAMETER ExcludeName
+    see IncludeName
+
+    .PARAMETER IncludeUser
+    see IncludeName
+
+    .PARAMETER ExcludeUser
+    see IncludeName
 
     .PARAMETER UserName
     Provide the Windows user name to connect to the target host via WMI. Better way than explicit credentials is to set the PRTG sensor
@@ -63,7 +71,10 @@
 #>
 param(
     [string]$ComputerName = "",
-    [string]$IgnorePattern = '',
+    [string]$IncludeName = '',
+    [string]$ExcludeName = '',
+    [string]$IncludeUser = '',
+    [string]$ExcludeUser = '',
     [string]$UserName = "",
     [string]$Password = "",
     [switch] $HttpPush,             #enables http push, usefull if you want to run the Script on the target Server to reduce remote Permissions
@@ -149,18 +160,25 @@ catch
     Exit
     }
 
-# hardcoded list that applies to all hosts
-$IgnoreScript = '^(TestIgnore)$' 
-
 #Remove Ignored Printer
-if ($IgnorePattern -ne "") 
+if ($IncludeName -ne "") 
     {
-    $PrintJobs = $PrintJobs | Where-Object {$_.Name -notmatch $IgnorePattern}  
+    $PrintJobs = $PrintJobs | Where-Object {$_.Name -match $IncludeName}  
     }
 
-if ($IgnoreScript -ne "") 
+if ($IncludeUser -ne "") 
     {
-    $PrintJobs = $PrintJobs | Where-Object {$_.Name -notmatch $IgnoreScript}  
+    $PrintJobs = $PrintJobs | Where-Object {$_.owner -match $IncludeUser}  
+    }
+
+if ($ExcludeName -ne "") 
+    {
+    $PrintJobs = $PrintJobs | Where-Object {$_.Name -notmatch $ExcludeName}  
+    }
+
+if ($ExcludeUser -ne "") 
+    {
+    $PrintJobs = $PrintJobs | Where-Object {$_.owner -notmatch $ExcludeUser}  
     }
 
 #Select oldest Job
@@ -189,7 +207,7 @@ if($PrintJobs)
     foreach($PrintJob in $PrintJobs)
         {
         if($PrintJob.Name -like "*,*"){
-            $PName = $PrintJob.Name.Substring(0,$PrintJob.Name.IndexOf(","))
+            $PName = $PrintJob.Name.Substring(0,$PrintJob.Name.LastIndexOf(","))
             }
         else{
             $PName = $PrintJob.Name
